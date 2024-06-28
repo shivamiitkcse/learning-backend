@@ -1,2 +1,0 @@
-http and https ,
-what are protocols and what are the other concepts considered important for the
