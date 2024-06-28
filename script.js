@@ -22,6 +22,11 @@ app.get('/register', function(req, res){
 
     res.send("dekha hazaro dafa aapko");
 });
+app.get('/sign up' , function(req, res){
+    res.send("sign up");
+});
+//let's understand error handling 
+// hi there
 app.listen(3000);
 // we are going to learn about the request and response handling
 
