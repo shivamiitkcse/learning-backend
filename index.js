@@ -1,38 +1,50 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const fs = require('fs');
 
-app.use(express.json());
-app.use(express.urlencoded({extended:true}));
+app.set('view engine', 'ejs'); // Set EJS as the view engine
 
-app.use(express.static(path.join(__dirname , '/public')));
-//isme apna poora path ka naam dalna hai 
-// you can use index.js
+app.use(express.json()); // Parse JSON bodies
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
-app.set('view engine' , 'ejs');
+app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from 'public' directory
 
-app.get("/" , function(req , res){
-    res.render("index");  
+app.get('/', function(req, res) {
+    fs.readdir('./files', function(err, files) {
+        if (err) {
+            console.error('Error reading directory:', err);
+            res.status(500).send('Internal Server Error');
+            return;
+        }
+        console.log(files);
+        res.render('index', { files: files }); // Render index.ejs when accessing the root URL
+    });
 });
 
-app.get("/login" , function(){
-    res.send("hello there , this is my first website");
-
+app.get('/files/:filename', function(req, res) {
+    fs.readFile(`./files/${req.params.filename}` ,"utf-8", function(err , filedata){
+        res.render('show'  , {filename: req.params.filename ,filedata});
+    })
 });
-app.get('/profile/:username' , function(req , res){
-    
-    res.send( `welcome, ${req.params.username}`);
+
+app.post('/create', function(req, res) {
+    const fileName = req.body.title.trim().split(' ').join('') + '.txt';
+    const filePath = path.join(__dirname, 'files', fileName);
+    const fileContent = req.body.details;
+
+    fs.writeFile(filePath, fileContent, function(err) {
+        if (err) {
+            console.error('Error writing file:', err);
+            res.status(500).send('Error creating task');
+            return;
+        }
+        
+        console.log('File created successfully:', fileName);
+        res.redirect('/');
+    });
 });
-//now after colon lagane ke baad you can add anything you want like shivam and for all the other things you want to add for
-app.get('/profile/:username/:age' , function(req , res){
-    res.send(req.params);
-    //this will direct return the object parameters of the url
 
-})
-app.get('/profile/:username/:age/:gender' , function(req ,res){
-    res.send(`welcomd, ${req.params.username} , how are you ?`)
-})
-app.listen(3000 , function(){
-    console.log('its running');
-
+app.listen(3000, function() {
+    console.log('Server is running on http://localhost:3000');
 });
